@@ -4,7 +4,7 @@ from sqlalchemy.ext.declarative import declarative_base
 
 
 
-sql_alcmemy_database_url = 'sqlite:///todos.db'
+sql_alcmemy_database_url = 'sqlite:///todos_app.db'
 
 engine = create_engine(sql_alcmemy_database_url, connect_args={'check_same_thread': False})
 
