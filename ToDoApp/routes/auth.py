@@ -9,6 +9,10 @@ from sqlalchemy.orm import Session
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from jose import JWTError, jwt
 
+# Sample userid and password
+# soniabhishek
+# test@123
+
 # openssl rand -hex 32
 secret_key = '1cadabfaab1e5bf9973dedd5bf9b5e5ba462552dbb5072e935e15f764b257ea2'
 algorithm = 'HS256'
@@ -78,7 +82,7 @@ async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                             detail='Could not validate credentials')
     
-    token = generate_jwt_token(user.username, user.id, timedelta(minutes=20))
+    token = generate_jwt_token(user.username, user.id, user.role, timedelta(minutes=20))
     return {'access_token': token, 'token_type':'bearer'}
 
 
@@ -94,12 +98,13 @@ def authenticate_user(username: str, password:str, db):
     return user_in_db
 
 
-def generate_jwt_token(username:str, userid: int, expires_delta: timedelta):
+def generate_jwt_token(username:str, userid: int, role: str, expires_delta: timedelta):
     expires = datetime.utcnow() + expires_delta
     
     payload = {
         'sub' : username,
         'id' : userid,
+        'role': role,
         'exp' : expires
     }
 
@@ -115,12 +120,13 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_bearer)]):
         payload = jwt.decode(token, secret_key, algorithms=[algorithm])
         username: str = payload.get('sub')
         userid: int = payload.get('id')
+        role: str = payload.get('role')
 
         if username is None or userid is None:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                                 detail='Could not validate credentials')
         
-        return {'username': username, 'userid': userid}
+        return {'username': username, 'userid': userid, 'role': role}
     
     except JWTError:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
